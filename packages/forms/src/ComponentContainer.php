@@ -2,14 +2,18 @@
 
 namespace Filament\Forms;
 
+use Filament\Forms\Components\Component;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Contracts\HasForms;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Support\Traits\Tappable;
 use Illuminate\View\Component as ViewComponent;
 
-class ComponentContainer extends ViewComponent implements Htmlable
+class ComponentContainer extends ViewComponent implements Htmlable, Arrayable
 {
     use Concerns\BelongsToLivewire;
     use Concerns\BelongsToModel;
@@ -35,14 +39,40 @@ class ComponentContainer extends ViewComponent implements Htmlable
 
     protected array $meta = [];
 
-    final public function __construct(HasForms $livewire)
+    final public function __construct(?HasForms $livewire = null)
     {
         $this->livewire($livewire);
     }
 
-    public static function make(HasForms $livewire): static
+    public static function make(?HasForms $livewire = null): static
     {
         return app(static::class, ['livewire' => $livewire]);
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'components' => array_map(function (TextInput $component) {
+                return [
+                    'config' => [
+                        'type' => $component->getType(),
+                    ],
+                    'label' => $component->getLabel(),
+                    'isRequired' => $component->isRequired(),
+                    'statePath' => $component->getStatePath(),
+                    'type' => $component::class,
+                ];
+            }, $this->getComponents()),
+            'state' => value(function () {
+                $state = [];
+
+                foreach ($this->getFlatComponents() as $component) {
+                    data_set($state, $component->getStatePath(), $component->getDefaultState());
+                }
+
+                return $state;
+            }),
+        ];
     }
 
     public function toHtml(): string
