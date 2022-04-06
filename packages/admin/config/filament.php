@@ -200,6 +200,7 @@ return [
         'notifications' => [
             'vertical_alignment' => 'top',
             'alignment' => 'center',
+            'timeout' => 6000,
         ],
         'sidebar' => [
             'is_collapsible_on_desktop' => false,
