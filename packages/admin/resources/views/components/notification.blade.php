@@ -4,7 +4,7 @@
         init: function () {
             this.$nextTick(() => this.isVisible = true)
 
-            setTimeout(() => this.transitionOut(), 6000)
+            setTimeout(() => this.transitionOut(), {{ config('filament.layout.notifications.timeout', 6000) }})
         },
         transitionOut: function () {
             this.isVisible = false
